@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce #Every pod will have dedicated PVC(in this case although, just one pod is running)
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: gpd-storage1

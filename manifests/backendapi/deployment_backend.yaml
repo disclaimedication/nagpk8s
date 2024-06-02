@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api #Labels are used to link all wrappers with core resources
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: auscryptic/nagp:v1.0 #image tag initially used
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - secretRef:
+            name: api-credentials #Credentails are passed as secrets
+        - configMapRef:
+            name: api-config #Postgres host and port values are passed here
+        livenessProbe:
+          httpGet:
+            path: /livez #Implemented in server.js for K8s to check the server is up
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 20
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /readyz #Implemented in server.js for K8s to check the server is ready to send traffic to DB
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 10
+          failureThreshold: 5
+  strategy: #Deployment strategy is shared here
+    rollingUpdate:
+      maxSurge: 1 
+      maxUnavailable: 1
